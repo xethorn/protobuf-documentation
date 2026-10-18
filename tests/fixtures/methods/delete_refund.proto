@@ -1,18 +1,23 @@
-// Represents request and response messages for deleting a refund.
+// Represents request and response messages for deleting a payment refund by ID.
+// Supports voiding pending refund requests before network settlement occurs.
 syntax = "proto3";
 
-package square.payments;
+package payments.core;
 
 import "tests/fixtures/resources/refund.proto";
 
-// Represents request payload to delete a refund by ID.
+// Represents request payload to delete or void a payment refund by ID.
+// Target refund must be in PENDING status to allow cancellation.
 message DeleteRefundRequest {
-  // Represents unique refund ID to delete.
+  // Represents unique ID of target refund resource to delete or void.
+  // Must correspond to an active pending refund in the processing queue.
   string refund_id = 1;
 }
 
-// Represents response payload for deleting a refund.
+// Represents response payload for refund deletion request.
+// Contains structured diagnostic error items if deletion request fails.
 message DeleteRefundResponse {
-  // Represents list of errors encountered during processing.
+  // Represents list of structured diagnostic errors encountered during deletion.
+  // Empty when deletion completes successfully and record is voided.
   repeated ServiceError errors = 1;
 }

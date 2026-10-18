@@ -1,48 +1,55 @@
-// Represents request and response messages for querying refunds with filters and pagination.
+// Represents request and response messages for querying refunds with filters.
+// Supports paginated search queries filtered by payment correlation IDs.
 syntax = "proto3";
 
-package square.payments;
+package payments.core;
 
 import "tests/fixtures/resources/refund.proto";
 
-// Represents filter definition for string attributes.
-message FilterDefinition {
-  // Represents string value to match against.
-  string value = 1;
-}
-
-// Represents list of query filter options.
+// Represents structured filter criteria set used to narrow down refund search results.
+// Evaluates predicate conditions against stored refund record attributes.
 message RefundFilters {
-  // Represents filter on payment ID.
-  FilterDefinition payment_id = 1;
+  // Represents list of payment identifiers to filter on in search queries.
+  // Every item in the list acts as an OR predicate condition when matching refunds.
+  repeated string payment_id = 1;
 }
 
-// Represents pagination parameter request payload.
+// Represents pagination limit and cursor parameters controlling result page size.
+// Enables sequential page iteration across large refund result sets.
 message PaginationRequest {
-  // Represents page limit count.
+  // Represents maximum number of refund items to return in a single response page.
+  // Must be an integer between 1 and 100 to prevent database query timeouts.
   int32 size = 1;
 
-  // Represents pagination cursor.
+  // Represents opaque continuation cursor string returned from previous query response.
+  // Pass empty string on initial query request to retrieve the first result page.
   string cursor = 2;
 }
 
-// Represents request payload to query payment refunds.
+// Represents request payload to query payment refunds based on filter criteria.
+// Accepts optional filter predicates and pagination constraints.
 message QueryRefundsRequest {
-  // Represents filter set for searching refunds.
+  // Represents structured filter set controlling field predicate conditions.
+  // Leave empty to query across all refund records within tenant scope.
   RefundFilters filters = 1;
 
-  // Represents pagination criteria.
+  // Represents pagination parameters controlling result page size and continuation offsets.
+  // Defines maximum item size limits and page offset cursor string pointers.
   PaginationRequest pagination = 2;
 }
 
-// Represents response payload containing queried payment refunds.
+// Represents response payload containing paginated search results for payment refunds.
+// Wraps array of matched refund records and continuation cursor token.
 message QueryRefundsResponse {
-  // Represents list of errors encountered during processing.
+  // Represents list of structured diagnostic errors encountered during query execution.
+  // Populated if invalid filter criteria or pagination limits were supplied.
   repeated ServiceError errors = 1;
 
-  // Represents list of matched PaymentRefund resources.
+  // Represents list of PaymentRefund resources matching specified query filter criteria.
+  // Contains empty slice if no refund records matched the search filters.
   repeated PaymentRefund refunds = 2;
 
-  // Represents pagination cursor for fetching next page.
+  // Represents opaque cursor string to pass in subsequent QueryRefundsRequest.
+  // Returns empty string when the last page of query results has been reached.
   string cursor = 3;
 }

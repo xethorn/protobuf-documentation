@@ -1,21 +1,27 @@
 // Represents request and response messages for retrieving a refund by ID.
+// Defines input query parameters and output resource response wrappers.
 syntax = "proto3";
 
-package square.payments;
+package payments.core;
 
 import "tests/fixtures/resources/refund.proto";
 
-// Represents request payload to retrieve a refund by ID.
+// Represents request payload to retrieve a single payment refund by unique ID.
+// Includes the required target refund identifier string.
 message RetrieveRefundRequest {
-  // Represents unique ID of the refund to retrieve.
+  // Represents unique ID of target refund resource to fetch from database.
+  // Must be a valid non-empty string corresponding to an existing refund.
   string refund_id = 1;
 }
 
-// Represents response payload containing retrieved refund details.
+// Represents response payload containing retrieved refund resource details.
+// Contains either the matched refund resource or a list of diagnostic errors.
 message RetrieveRefundResponse {
-  // Represents list of errors encountered during processing.
+  // Represents structured error list containing diagnostic information if failed.
+  // Empty when retrieval completes successfully without errors.
   repeated ServiceError errors = 1;
 
-  // Represents retrieved PaymentRefund resource.
+  // Represents retrieved PaymentRefund object matching requested ID if found.
+  // Populated when request completes without validation or lookup errors.
   PaymentRefund refund = 2;
 }

@@ -1,24 +1,31 @@
-// Represents request and response messages for updating a refund.
+// Represents request and response messages for updating an existing payment refund.
+// Allows modifying editable refund attributes such as metadata tags and reasons.
 syntax = "proto3";
 
-package square.payments;
+package payments.core;
 
 import "tests/fixtures/resources/refund.proto";
 
-// Represents request payload to update an existing payment refund.
+// Represents request payload to update attributes on an existing refund resource.
+// Specifies target refund ID and new attribute payload values to persist.
 message UpdateRefundRequest {
-  // Represents unique ID of refund to update.
+  // Represents unique system identifier of target payment refund resource to update.
+  // Must correspond to an existing mutable refund entity in database storage.
   string refund_id = 1;
 
-  // Represents updated refund resource attributes.
+  // Represents updated PaymentRefund resource attributes to persist in database.
+  // Includes updated reason string and metadata key-value tags.
   PaymentRefund refund = 2;
 }
 
-// Represents response payload for updating a refund.
+// Represents response payload containing updated refund details or error lists.
+// Returns updated resource attributes upon successful database persistence.
 message UpdateRefundResponse {
-  // Represents list of errors encountered during processing.
+  // Represents list of error items describing validation or persistence failures.
+  // Empty when update operation succeeds without execution errors.
   repeated ServiceError errors = 1;
 
-  // Represents updated PaymentRefund resource.
+  // Represents updated PaymentRefund resource reflecting newly persisted attributes.
+  // Contains modified metadata tags and updated resource version stamp.
   PaymentRefund refund = 2;
 }

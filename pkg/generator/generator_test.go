@@ -21,14 +21,14 @@ func TestHTMLGenerator(t *testing.T) {
 			// beforeEach fresh initialization
 			setup := func() {
 				config = generator.Config{
-					Title:        "Square Refund Service API",
+					Title:        "Payments Refund Service API",
 					PrimaryColor: "#10b981",
 					Theme:        "dark",
 					FontFamily:   "Inter, sans-serif",
 				}
 
 				fct := factory.NewDescriptorFactory(99)
-				fileProto := fct.CreateFileDescriptor("square.test", 1, 2, 1)
+				fileProto := fct.CreateFileDescriptor("payments.test", 1, 2, 1)
 
 				fds := &descriptorpb.FileDescriptorSet{
 					File: []*descriptorpb.FileDescriptorProto{fileProto},
@@ -44,7 +44,7 @@ func TestHTMLGenerator(t *testing.T) {
 				htmlStr, err := gen.Render(rootDoc)
 				require.NoError(t, err)
 
-				assert.Contains(t, htmlStr, "<title>Square Refund Service API</title>")
+				assert.Contains(t, htmlStr, "<title>Payments Refund Service API</title>")
 				assert.Contains(t, htmlStr, "--primary-color: #10b981")
 				assert.Contains(t, htmlStr, "data-theme=\"dark\"")
 				assert.Contains(t, htmlStr, "Inter, sans-serif")

@@ -1,84 +1,111 @@
 // Represents payment refund resource definitions and service error payloads.
+// Provides domain models for tracking refund processing lifecycles and structured failures.
 syntax = "proto3";
 
-package square.payments;
+package payments.core;
 
 import "tests/fixtures/extensions.proto";
 
-// Represents the state of a payment refund.
+// Represents the state of a payment refund during its processing lifecycle.
+// Transitions from PENDING to COMPLETED or REJECTED based on network responses.
 enum PaymentRefundStatus {
-  // Represents default status - state is unknown or unspecified.
+  // Represents default status when state is unknown or unspecified.
+  // Used as fallback when converting legacy statuses.
   REFUND_STATUS_UNSPECIFIED = 0;
 
-  // Represents refund request currently pending processing.
+  // Represents refund request currently pending processing with card networks.
+  // Funds have been reserved but not yet settled to cardholder account.
   PENDING = 1;
 
-  // Represents refund completed successfully.
+  // Represents refund that completed successfully with cleared fund settlement.
+  // Settlement ledger entries have been recorded for accounting reconciliation.
   COMPLETED = 2;
 
-  // Represents refund rejected or failed.
+  // Represents refund rejected or failed due to account constraints or bank declines.
+  // Check the associated error response payload for detailed decline reasons.
   REJECTED = 3;
 }
 
-// Represents high-level error categories for service responses.
+// Represents high-level error categories returned in API responses.
+// Allows programmatic error classification in client SDK exception handlers.
 enum ErrorType {
-  // Represents default unspecified error category.
+  // Represents default unspecified error category fallback.
+  // Returned when no specific failure domain is matched.
   ERROR_TYPE_UNSPECIFIED = 0;
 
-  // Represents validation error in request payload.
+  // Represents validation error caused by invalid syntax or missing parameters.
+  // Clients should inspect the error field attribute to remediate input data.
   INVALID_REQUEST = 1;
 
-  // Represents resource not found error.
+  // Represents resource not found error when requested entity cannot be resolved.
+  // Check that the specified ID string exists and belongs to active tenant scope.
   NOT_FOUND = 2;
 
-  // Represents internal server error.
+  // Represents internal server error or downstream gateway dependency failure.
+  // Safe to retry with exponential backoff if idempotency key is supplied.
   INTERNAL_ERROR = 3;
 }
 
-// Represents error detail items returned in RPC responses.
+// Represents error detail items returned in RPC response error lists.
+// Conforms to structured error reporting specifications for detailed diagnostics.
 message ServiceError {
-  // Represents high category error type enum.
+  // Represents high category classification enum for programmatic error handling.
+  // Enables switch-case error handling logic in generated client libraries.
   ErrorType type = 1;
 
-  // Represents customizable string error code.
+  // Represents customizable string error code indicating specific failure reason.
+  // Useful for displaying localized error strings in application user interfaces.
   string code = 2;
 
-  // Represents optional field path associated with error.
+  // Represents optional JSON path or proto field name associated with validation failure.
+  // Points directly to the input parameter that failed validation rules.
   string field = 3;
 
-  // Represents optional human readable detail message.
+  // Represents optional human readable detailed message describing error cause.
+  // Provides actionable advice on how client developers can resolve the error.
   string details = 4;
 
-  // Represents optional value passed in that caused error.
+  // Represents optional original invalid string value passed in client request.
+  // Included to assist developer debugging during request payload validation.
   string value = 5;
 }
 
-// Represents a refund of a payment transaction.
+// Represents a refund of a payment transaction containing settlement status.
+// Includes monetary amounts, settlement state, and target account destination choices.
 message PaymentRefund {
-  // Represents unique identifier for the refund.
+  // Represents unique system identifier generated for tracking the refund resource.
+  // Use this string identifier when querying or retrieving specific refund state.
   string id = 1;
 
-  // Represents unique ID of the payment being refunded.
+  // Represents unique ID of original payment transaction being refunded.
+  // Must correspond to a settled payment transaction within the same environment.
   string payment_id = 2;
 
-  // Represents status of the refund operation.
+  // Represents current processing status of refund operation in payment pipeline.
+  // Monitors state progression from initial submission to final bank clearing.
   PaymentRefundStatus status = 3;
 
-  // Represents amount in cents to be refunded.
-  int64 amount_money = 4 [(square.options.is_sensitive) = false];
+  // Represents total refund amount specified in minor currency units (e.g. cents for USD).
+  // Must be a positive non-zero integer not exceeding the original charge balance.
+  int64 amount_money = 4 [(payments.options.is_sensitive) = false];
 
-  // Represents reason provided for the refund.
+  // Represents merchant-provided or system reason describing why payment was refunded.
+  // Displayed on customer billing statements and dashboard reporting modules.
   string reason = 5;
 
-  // Represents destination account or card details for refund payload.
+  // Represents destination targeting choice specifying card or bank transfer account.
+  // Ensures customer funds are routed back to the appropriate financial institution.
   oneof destination {
-    // Represents card refund target details.
+    // Represents card refund target details specifying last four digits of target card.
+    // Displayed to customer on receipt documents for payment identification.
     string card_last_four = 6;
 
-    // Represents direct bank transfer account reference.
+    // Represents direct bank account reference for ACH or wire refund target.
+    // Used when original card processing account has been closed by customer.
     string bank_account_id = 7;
   }
 
-  // Represents custom metadata associated with the refund.
+  // Represents key-value metadata map associated with refund resource.
+  // Stores custom partner tags, order correlation IDs, and internal notes.
   map<string, string> metadata = 8;
 }

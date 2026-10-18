@@ -90,19 +90,19 @@ func TestParser(t *testing.T) {
 					}
 				}
 				require.NotNil(t, sampleFile)
-				assert.Equal(t, "square.payments", sampleFile.Package)
+				assert.Equal(t, "payments.core", sampleFile.Package)
 
 				require.Len(t, sampleFile.Services, 1)
 				svc := sampleFile.Services[0]
 				assert.Equal(t, "RefundsService", svc.Name)
-				assert.Contains(t, svc.Comments.Description, "Represents service managing payment refund operations.")
+				assert.Contains(t, svc.Comments.Description, "Represents service managing payment refund operations")
 
 				require.Len(t, svc.Methods, 5)
 				retrieveMethod := svc.Methods[0]
 				assert.Equal(t, "RetrieveRefund", retrieveMethod.Name)
-				assert.Equal(t, "square.payments.RetrieveRefundRequest", retrieveMethod.InputType)
-				assert.Equal(t, "square.payments.RetrieveRefundResponse", retrieveMethod.OutputType)
-				assert.Contains(t, retrieveMethod.Comments.Description, "Represents method to retrieve a payment refund by ID.")
+				assert.Equal(t, "payments.core.RetrieveRefundRequest", retrieveMethod.InputType)
+				assert.Equal(t, "payments.core.RetrieveRefundResponse", retrieveMethod.OutputType)
+				assert.Contains(t, retrieveMethod.Comments.Description, "Represents RPC method to retrieve a payment refund resource")
 			})
 
 			t.Run("Should confirm message, fields, and oneof membership extraction from imported resources", func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestParser(t *testing.T) {
 					}
 				}
 				require.NotNil(t, paymentRefund)
-				assert.Contains(t, paymentRefund.Comments.Description, "Represents a refund of a payment transaction.")
+				assert.Contains(t, paymentRefund.Comments.Description, "Represents a refund of a payment transaction")
 
 				// Check field
 				var idField *parser.FieldDoc
@@ -137,7 +137,7 @@ func TestParser(t *testing.T) {
 				require.NotNil(t, idField)
 				assert.Equal(t, "string", idField.Type)
 				assert.Equal(t, int32(1), idField.Number)
-				assert.Contains(t, idField.Comments.Description, "Represents unique identifier")
+				assert.Contains(t, idField.Comments.Description, "Represents unique system identifier")
 
 				// Check oneof
 				var cardField *parser.FieldDoc
