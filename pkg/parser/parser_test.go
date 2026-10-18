@@ -57,11 +57,19 @@ func parseProtoFixture(t *testing.T, relPath string) *parser.RootResult {
 }
 
 func TestParser(t *testing.T) {
+	t.Run("Context: Comment Cleaning Unit Tests", func(t *testing.T) {
+		t.Run("Should correctly parse complex block comments with /**, */, *, and //", func(t *testing.T) {
+			input := "/**\n * // this is cool\n * another detailed line\n */"
+			cleaned := parser.CleanComment(input)
+			assert.Equal(t, "this is cool\nanother detailed line", cleaned)
+		})
+	})
+
 	t.Run("Context: Static Proto Fixture Parsing", func(t *testing.T) {
-		t.Run("Context: Parsing sample.proto", func(t *testing.T) {
+		t.Run("Context: Parsing sample.proto and imported dependencies", func(t *testing.T) {
 			var root *parser.RootResult
 
-			// beforeEach fresh initialization per test context
+			// beforeEach setup isolation
 			setup := func() {
 				root = parseProtoFixture(t, "tests/fixtures/sample.proto")
 			}
@@ -76,7 +84,7 @@ func TestParser(t *testing.T) {
 				setup()
 				var sampleFile *parser.FileDoc
 				for _, f := range root.Files {
-					if stringsHasSuffix(f.Name, "sample.proto") {
+					if filepath.Base(f.Name) == "sample.proto" {
 						sampleFile = f
 						break
 					}
@@ -87,36 +95,36 @@ func TestParser(t *testing.T) {
 				require.Len(t, sampleFile.Services, 1)
 				svc := sampleFile.Services[0]
 				assert.Equal(t, "RefundsService", svc.Name)
-				assert.Contains(t, svc.Comments.Description, "Service managing payment refunds")
+				assert.Contains(t, svc.Comments.Description, "Represents service managing payment refund operations.")
 
-				require.Len(t, svc.Methods, 2)
-				method := svc.Methods[0]
-				assert.Equal(t, "RefundPayment", method.Name)
-				assert.Equal(t, "square.payments.RefundPaymentRequest", method.InputType)
-				assert.Equal(t, "square.payments.RefundPaymentResponse", method.OutputType)
-				assert.Contains(t, method.Comments.Description, "Refunds a payment.")
+				require.Len(t, svc.Methods, 5)
+				retrieveMethod := svc.Methods[0]
+				assert.Equal(t, "RetrieveRefund", retrieveMethod.Name)
+				assert.Equal(t, "square.payments.RetrieveRefundRequest", retrieveMethod.InputType)
+				assert.Equal(t, "square.payments.RetrieveRefundResponse", retrieveMethod.OutputType)
+				assert.Contains(t, retrieveMethod.Comments.Description, "Represents method to retrieve a payment refund by ID.")
 			})
 
-			t.Run("Should confirm message, fields, and oneof membership extraction", func(t *testing.T) {
+			t.Run("Should confirm message, fields, and oneof membership extraction from imported resources", func(t *testing.T) {
 				setup()
-				var sampleFile *parser.FileDoc
+				var refundResourceFile *parser.FileDoc
 				for _, f := range root.Files {
-					if stringsHasSuffix(f.Name, "sample.proto") {
-						sampleFile = f
+					if filepath.Base(f.Name) == "refund.proto" {
+						refundResourceFile = f
 						break
 					}
 				}
-				require.NotNil(t, sampleFile)
+				require.NotNil(t, refundResourceFile)
 
 				var paymentRefund *parser.MessageDoc
-				for _, msg := range sampleFile.Messages {
+				for _, msg := range refundResourceFile.Messages {
 					if msg.Name == "PaymentRefund" {
 						paymentRefund = msg
 						break
 					}
 				}
 				require.NotNil(t, paymentRefund)
-				assert.Contains(t, paymentRefund.Comments.Description, "PaymentRefund represents a refund")
+				assert.Contains(t, paymentRefund.Comments.Description, "Represents a refund of a payment transaction.")
 
 				// Check field
 				var idField *parser.FieldDoc
@@ -129,7 +137,7 @@ func TestParser(t *testing.T) {
 				require.NotNil(t, idField)
 				assert.Equal(t, "string", idField.Type)
 				assert.Equal(t, int32(1), idField.Number)
-				assert.Contains(t, idField.Comments.Description, "Unique identifier")
+				assert.Contains(t, idField.Comments.Description, "Represents unique identifier")
 
 				// Check oneof
 				var cardField *parser.FieldDoc
@@ -145,24 +153,24 @@ func TestParser(t *testing.T) {
 
 			t.Run("Should confirm Enum and EnumValue extraction", func(t *testing.T) {
 				setup()
-				var sampleFile *parser.FileDoc
+				var refundResourceFile *parser.FileDoc
 				for _, f := range root.Files {
-					if stringsHasSuffix(f.Name, "sample.proto") {
-						sampleFile = f
+					if filepath.Base(f.Name) == "refund.proto" {
+						refundResourceFile = f
 						break
 					}
 				}
-				require.NotNil(t, sampleFile)
+				require.NotNil(t, refundResourceFile)
 
-				require.Len(t, sampleFile.Enums, 1)
-				enumDoc := sampleFile.Enums[0]
+				require.Len(t, refundResourceFile.Enums, 2)
+				enumDoc := refundResourceFile.Enums[0]
 				assert.Equal(t, "PaymentRefundStatus", enumDoc.Name)
 				assert.Len(t, enumDoc.Values, 4)
 
 				pendingVal := enumDoc.Values[1]
 				assert.Equal(t, "PENDING", pendingVal.Name)
 				assert.Equal(t, int32(1), pendingVal.Number)
-				assert.Contains(t, pendingVal.Comments.Description, "Refund request is currently pending")
+				assert.Contains(t, pendingVal.Comments.Description, "Represents refund request currently pending")
 			})
 		})
 	})
@@ -200,8 +208,4 @@ func TestParser(t *testing.T) {
 			assert.Contains(t, msg0.Fields[0].Comments.Description, "Field documentation for field_0")
 		})
 	})
-}
-
-func stringsHasSuffix(s, suffix string) bool {
-	return filepath.Base(s) == filepath.Base(suffix)
 }

@@ -1,0 +1,48 @@
+// Represents request and response messages for querying refunds with filters and pagination.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/resources/refund.proto";
+
+// Represents filter definition for string attributes.
+message FilterDefinition {
+  // Represents string value to match against.
+  string value = 1;
+}
+
+// Represents list of query filter options.
+message RefundFilters {
+  // Represents filter on payment ID.
+  FilterDefinition payment_id = 1;
+}
+
+// Represents pagination parameter request payload.
+message PaginationRequest {
+  // Represents page limit count.
+  int32 size = 1;
+
+  // Represents pagination cursor.
+  string cursor = 2;
+}
+
+// Represents request payload to query payment refunds.
+message QueryRefundsRequest {
+  // Represents filter set for searching refunds.
+  RefundFilters filters = 1;
+
+  // Represents pagination criteria.
+  PaginationRequest pagination = 2;
+}
+
+// Represents response payload containing queried payment refunds.
+message QueryRefundsResponse {
+  // Represents list of errors encountered during processing.
+  repeated ServiceError errors = 1;
+
+  // Represents list of matched PaymentRefund resources.
+  repeated PaymentRefund refunds = 2;
+
+  // Represents pagination cursor for fetching next page.
+  string cursor = 3;
+}

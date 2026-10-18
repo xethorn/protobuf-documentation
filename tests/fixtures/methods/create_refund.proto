@@ -1,0 +1,24 @@
+// Represents request and response messages for creating a refund.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/resources/refund.proto";
+
+// Represents request payload to create a new payment refund.
+message CreateRefundRequest {
+  // Represents unique idempotency key to prevent double processing.
+  string idempotency_key = 1;
+
+  // Represents refund object payload.
+  PaymentRefund refund = 2;
+}
+
+// Represents response payload for creating a refund.
+message CreateRefundResponse {
+  // Represents list of errors encountered during processing.
+  repeated ServiceError errors = 1;
+
+  // Represents created PaymentRefund resource.
+  PaymentRefund refund = 2;
+}

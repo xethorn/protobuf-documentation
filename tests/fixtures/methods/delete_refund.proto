@@ -1,0 +1,18 @@
+// Represents request and response messages for deleting a refund.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/resources/refund.proto";
+
+// Represents request payload to delete a refund by ID.
+message DeleteRefundRequest {
+  // Represents unique refund ID to delete.
+  string refund_id = 1;
+}
+
+// Represents response payload for deleting a refund.
+message DeleteRefundResponse {
+  // Represents list of errors encountered during processing.
+  repeated ServiceError errors = 1;
+}

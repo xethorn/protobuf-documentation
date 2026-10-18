@@ -16,20 +16,49 @@ func PathKey(path []int32) string {
 	return strings.Join(strs, ",")
 }
 
-func cleanComment(s string) string {
+// CleanComment cleans multi-line comments, removing JSDoc/Javadoc delimiters (/**, */, *) and inline // prefixes.
+func CleanComment(s string) string {
 	if s == "" {
 		return ""
 	}
+
 	lines := strings.Split(s, "\n")
 	var cleaned []string
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		line = strings.TrimPrefix(line, "//")
-		line = strings.TrimPrefix(line, "/*")
-		line = strings.TrimSuffix(line, "*/")
-		line = strings.TrimPrefix(line, "*")
-		cleaned = append(cleaned, strings.TrimSpace(line))
+
+		// Strip block comment openers/closers
+		if strings.HasPrefix(line, "/**") {
+			line = strings.TrimPrefix(line, "/**")
+			line = strings.TrimSpace(line)
+		} else if strings.HasPrefix(line, "/*") {
+			line = strings.TrimPrefix(line, "/*")
+			line = strings.TrimSpace(line)
+		}
+
+		if strings.HasSuffix(line, "*/") {
+			line = strings.TrimSuffix(line, "*/")
+			line = strings.TrimSpace(line)
+		}
+
+		// Strip leading JSDoc asterisks
+		if strings.HasPrefix(line, "*") {
+			line = strings.TrimPrefix(line, "*")
+			line = strings.TrimSpace(line)
+		}
+
+		// Strip inline // prefixes
+		if strings.HasPrefix(line, "//") {
+			line = strings.TrimPrefix(line, "//")
+			line = strings.TrimSpace(line)
+		}
+
+		if line != "" {
+			cleaned = append(cleaned, line)
+		}
 	}
+
 	return strings.TrimSpace(strings.Join(cleaned, "\n"))
 }
 
@@ -39,11 +68,11 @@ func ExtractComments(loc *descriptorpb.SourceCodeInfo_Location) Comments {
 		return Comments{}
 	}
 
-	leading := cleanComment(loc.GetLeadingComments())
-	trailing := cleanComment(loc.GetTrailingComments())
+	leading := CleanComment(loc.GetLeadingComments())
+	trailing := CleanComment(loc.GetTrailingComments())
 	var detached []string
 	for _, d := range loc.GetLeadingDetachedComments() {
-		detached = append(detached, cleanComment(d))
+		detached = append(detached, CleanComment(d))
 	}
 
 	fullDesc := leading

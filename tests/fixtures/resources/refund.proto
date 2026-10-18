@@ -1,0 +1,84 @@
+// Represents payment refund resource definitions and service error payloads.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/extensions.proto";
+
+// Represents the state of a payment refund.
+enum PaymentRefundStatus {
+  // Represents default status - state is unknown or unspecified.
+  REFUND_STATUS_UNSPECIFIED = 0;
+
+  // Represents refund request currently pending processing.
+  PENDING = 1;
+
+  // Represents refund completed successfully.
+  COMPLETED = 2;
+
+  // Represents refund rejected or failed.
+  REJECTED = 3;
+}
+
+// Represents high-level error categories for service responses.
+enum ErrorType {
+  // Represents default unspecified error category.
+  ERROR_TYPE_UNSPECIFIED = 0;
+
+  // Represents validation error in request payload.
+  INVALID_REQUEST = 1;
+
+  // Represents resource not found error.
+  NOT_FOUND = 2;
+
+  // Represents internal server error.
+  INTERNAL_ERROR = 3;
+}
+
+// Represents error detail items returned in RPC responses.
+message ServiceError {
+  // Represents high category error type enum.
+  ErrorType type = 1;
+
+  // Represents customizable string error code.
+  string code = 2;
+
+  // Represents optional field path associated with error.
+  string field = 3;
+
+  // Represents optional human readable detail message.
+  string details = 4;
+
+  // Represents optional value passed in that caused error.
+  string value = 5;
+}
+
+// Represents a refund of a payment transaction.
+message PaymentRefund {
+  // Represents unique identifier for the refund.
+  string id = 1;
+
+  // Represents unique ID of the payment being refunded.
+  string payment_id = 2;
+
+  // Represents status of the refund operation.
+  PaymentRefundStatus status = 3;
+
+  // Represents amount in cents to be refunded.
+  int64 amount_money = 4 [(square.options.is_sensitive) = false];
+
+  // Represents reason provided for the refund.
+  string reason = 5;
+
+  // Represents destination account or card details for refund payload.
+  oneof destination {
+    // Represents card refund target details.
+    string card_last_four = 6;
+
+    // Represents direct bank transfer account reference.
+    string bank_account_id = 7;
+  }
+
+  // Represents custom metadata associated with the refund.
+  map<string, string> metadata = 8;
+}

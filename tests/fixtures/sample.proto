@@ -1,112 +1,28 @@
-// Payment API Service Definition for Square-like payment refund processing.
-// This file serves as a comprehensive test fixture for proto-doc.
+// Represents Payment Refunds Service API definition.
 syntax = "proto3";
 
 package square.payments;
 
-import "tests/fixtures/options.proto";
+import "tests/fixtures/methods/retrieve_refund.proto";
+import "tests/fixtures/methods/query_refunds.proto";
+import "tests/fixtures/methods/create_refund.proto";
+import "tests/fixtures/methods/update_refund.proto";
+import "tests/fixtures/methods/delete_refund.proto";
 
-// PaymentRefundStatus represents the state of a payment refund.
-enum PaymentRefundStatus {
-  // Default status - state is unknown or unspecified.
-  REFUND_STATUS_UNSPECIFIED = 0;
-
-  // Refund request is currently pending processing.
-  PENDING = 1;
-
-  // Refund completed successfully.
-  COMPLETED = 2;
-
-  // Refund rejected or failed.
-  REJECTED = 3;
-}
-
-// PaymentRefund represents a refund of a payment.
-message PaymentRefund {
-  // Unique identifier for the refund.
-  string id = 1;
-
-  // Unique ID of the payment being refunded.
-  string payment_id = 2;
-
-  // Status of the refund operation.
-  PaymentRefundStatus status = 3;
-
-  // Amount in cents to be refunded.
-  int64 amount_money = 4 [(square.options.is_sensitive) = false];
-
-  // Reason provided for the refund.
-  string reason = 5;
-
-  // Destination account or card details for refund payload
-  oneof destination {
-    // Card refund target details
-    string card_last_four = 6;
-
-    // Direct bank transfer account reference
-    string bank_account_id = 7;
-  }
-
-  // Custom metadata associated with the refund
-  map<string, string> metadata = 8;
-}
-
-// Request payload for creating a refund.
-message RefundPaymentRequest {
-  // Unique idempotency key to prevent double processing.
-  string idempotency_key = 1;
-
-  // ID of the payment to refund.
-  string payment_id = 2;
-
-  // Amount details for the refund.
-  int64 amount = 3;
-
-  // Reason for refunding.
-  string reason = 4;
-}
-
-// Response payload for creating a refund.
-message RefundPaymentResponse {
-  // Details of errors encountered during processing, if any.
-  repeated string errors = 1;
-
-  // The created PaymentRefund object.
-  PaymentRefund refund = 2;
-}
-
-// Request payload for listing payment refunds.
-message ListPaymentRefundsRequest {
-  // The location ID to filter refunds by.
-  string location_id = 1;
-
-  // Pagination cursor for fetching next page.
-  string cursor = 2;
-
-  // Maximum number of refunds to return per page.
-  int32 limit = 3;
-}
-
-// Response payload for listing payment refunds.
-message ListPaymentRefundsResponse {
-  // List of payment refunds returned.
-  repeated PaymentRefund refunds = 1;
-
-  // Pagination cursor for next page if available.
-  string cursor = 2;
-}
-
-// Service managing payment refunds for transactions.
+// Represents service managing payment refund operations.
 service RefundsService {
-  // Refunds a payment.
-  //
-  // Creates a refund for an existing payment by payment ID.
-  rpc RefundPayment(RefundPaymentRequest) returns (RefundPaymentResponse) {
-    option (square.options.is_experimental) = false;
-  }
+  // Represents method to retrieve a payment refund by ID.
+  rpc RetrieveRefund(RetrieveRefundRequest) returns (RetrieveRefundResponse);
 
-  // Retrieves a paginated list of payment refunds.
-  //
-  // Returns all refunds associated with a location.
-  rpc ListPaymentRefunds(ListPaymentRefundsRequest) returns (ListPaymentRefundsResponse);
+  // Represents method to query payment refunds based on filter criteria.
+  rpc QueryRefunds(QueryRefundsRequest) returns (QueryRefundsResponse);
+
+  // Represents method to create a new payment refund.
+  rpc CreateRefund(CreateRefundRequest) returns (CreateRefundResponse);
+
+  // Represents method to update an existing payment refund.
+  rpc UpdateRefund(UpdateRefundRequest) returns (UpdateRefundResponse);
+
+  // Represents method to delete a payment refund by ID.
+  rpc DeleteRefund(DeleteRefundRequest) returns (DeleteRefundResponse);
 }

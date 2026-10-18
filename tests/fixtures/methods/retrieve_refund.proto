@@ -1,0 +1,21 @@
+// Represents request and response messages for retrieving a refund by ID.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/resources/refund.proto";
+
+// Represents request payload to retrieve a refund by ID.
+message RetrieveRefundRequest {
+  // Represents unique ID of the refund to retrieve.
+  string refund_id = 1;
+}
+
+// Represents response payload containing retrieved refund details.
+message RetrieveRefundResponse {
+  // Represents list of errors encountered during processing.
+  repeated ServiceError errors = 1;
+
+  // Represents retrieved PaymentRefund resource.
+  PaymentRefund refund = 2;
+}

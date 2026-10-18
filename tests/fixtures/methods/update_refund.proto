@@ -1,0 +1,24 @@
+// Represents request and response messages for updating a refund.
+syntax = "proto3";
+
+package square.payments;
+
+import "tests/fixtures/resources/refund.proto";
+
+// Represents request payload to update an existing payment refund.
+message UpdateRefundRequest {
+  // Represents unique ID of refund to update.
+  string refund_id = 1;
+
+  // Represents updated refund resource attributes.
+  PaymentRefund refund = 2;
+}
+
+// Represents response payload for updating a refund.
+message UpdateRefundResponse {
+  // Represents list of errors encountered during processing.
+  repeated ServiceError errors = 1;
+
+  // Represents updated PaymentRefund resource.
+  PaymentRefund refund = 2;
+}

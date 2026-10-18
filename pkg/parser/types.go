@@ -1,12 +1,12 @@
 package parser
 
-// RootResult represents the root document output.
+// Represents the root JSON documentation output result structure.
 type RootResult struct {
 	Version string     `json:"version"`
 	Files   []*FileDoc `json:"files"`
 }
 
-// Comments holds extracted source code documentation comments.
+// Represents extracted source code documentation comments (leading, trailing, detached).
 type Comments struct {
 	Leading     string   `json:"leading"`
 	Trailing    string   `json:"trailing"`
@@ -14,7 +14,7 @@ type Comments struct {
 	Description string   `json:"description"`
 }
 
-// FileDoc holds file-level documentation and AST declarations.
+// Represents file-level documentation and AST declarations for a .proto file.
 type FileDoc struct {
 	Name         string          `json:"name"`
 	Package      string          `json:"package"`
@@ -27,7 +27,7 @@ type FileDoc struct {
 	Extensions   []*ExtensionDoc `json:"extensions"`
 }
 
-// ServiceDoc represents a gRPC service definition.
+// Represents a gRPC service definition in a .proto file.
 type ServiceDoc struct {
 	Name     string       `json:"name"`
 	FullName string       `json:"full_name"`
@@ -35,7 +35,7 @@ type ServiceDoc struct {
 	Methods  []*MethodDoc `json:"methods"`
 }
 
-// MethodDoc represents an RPC method definition.
+// Represents an RPC method definition inside a gRPC service.
 type MethodDoc struct {
 	Name            string   `json:"name"`
 	InputType       string   `json:"input_type"`
@@ -45,7 +45,7 @@ type MethodDoc struct {
 	Comments        Comments `json:"comments"`
 }
 
-// MessageDoc represents a Protobuf message definition.
+// Represents a Protobuf message definition.
 type MessageDoc struct {
 	Name           string          `json:"name"`
 	FullName       string          `json:"full_name"`
@@ -58,13 +58,13 @@ type MessageDoc struct {
 	Extensions     []*ExtensionDoc `json:"extensions"`
 }
 
-// OneofDoc represents a oneof declaration inside a message.
+// Represents a oneof declaration inside a message.
 type OneofDoc struct {
 	Name     string   `json:"name"`
 	Comments Comments `json:"comments"`
 }
 
-// FieldDoc represents a field or extension in a message/file.
+// Represents a field or extension definition inside a message or file.
 type FieldDoc struct {
 	Name         string   `json:"name"`
 	Number       int32    `json:"number"`
@@ -79,10 +79,10 @@ type FieldDoc struct {
 	Comments     Comments `json:"comments"`
 }
 
-// ExtensionDoc is an alias for FieldDoc for top-level or nested extensions.
+// Represents an extension definition in a file or message scope.
 type ExtensionDoc = FieldDoc
 
-// EnumDoc represents an Enum definition.
+// Represents an Enum definition.
 type EnumDoc struct {
 	Name     string          `json:"name"`
 	FullName string          `json:"full_name"`
@@ -90,7 +90,7 @@ type EnumDoc struct {
 	Values   []*EnumValueDoc `json:"values"`
 }
 
-// EnumValueDoc represents a single value inside an Enum.
+// Represents a single value declaration inside an Enum.
 type EnumValueDoc struct {
 	Name     string   `json:"name"`
 	Number   int32    `json:"number"`

@@ -1,0 +1,18 @@
+// Represents custom options and extensions for payment testing
+syntax = "proto3";
+
+package square.options;
+
+import "google/protobuf/descriptor.proto";
+
+// Represents a custom extension option for methods to mark deprecation or experimental status.
+extend google.protobuf.MethodOptions {
+  // Represents a description comment for experimental extension.
+  bool is_experimental = 50001;
+}
+
+// Represents a custom extension option for fields.
+extend google.protobuf.FieldOptions {
+  // Represents a sensitive field flag comment.
+  bool is_sensitive = 50002;
+}
