@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proto-doc"
+version = "0.1.0"
+description = "Protobuf to JSON extractor and HTML documentation generator"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "protobuf>=4.21.0",
+    "grpcio-tools>=1.50.0",
+    "jinja2>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "playwright>=1.30.0",
+]
+
+[project.scripts]
+proto-doc = "proto_doc.cli:main"
+protoc-gen-docjson = "proto_doc.plugin_json:main"
+protoc-gen-dochtml = "proto_doc.plugin_html:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
