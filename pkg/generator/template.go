@@ -1,14 +1,16 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="{{ config.theme }}">
+package generator
+
+const HTMLTemplate = `<!DOCTYPE html>
+<html lang="en" data-theme="{{ .Config.Theme }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ config.title }}</title>
+  <title>{{ .Config.Title }}</title>
   <style>
     :root {
-      --font-family: {{ config.font_family }};
-      --primary-color: {{ config.primary_color }};
-      --primary-hover: {{ config.primary_hover_color }};
+      --font-family: {{ .Config.FontFamily }};
+      --primary-color: {{ .Config.PrimaryColor }};
+      --primary-hover: {{ .Config.PrimaryHoverColor }};
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --sidebar-bg: #ffffff;
@@ -201,7 +203,6 @@
       max-width: 1200px;
     }
 
-    /* Sections & Fluid Modern Cards */
     .doc-section {
       margin-bottom: 64px;
       scroll-margin-top: 80px;
@@ -244,7 +245,6 @@
       white-space: pre-line;
     }
 
-    /* Two-Column Method Layout (Square API Inspired) */
     .method-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -272,7 +272,6 @@
       box-shadow: 0 6px 24px -2px rgba(0, 0, 0, 0.06);
     }
 
-    /* Code & Example Snippets */
     .code-box {
       background: var(--code-bg);
       color: var(--code-text);
@@ -284,7 +283,6 @@
       line-height: 1.5;
     }
 
-    /* Field & Enum Table */
     .params-table {
       width: 100%;
       border-collapse: separate;
@@ -335,7 +333,6 @@
       line-height: 1.4;
     }
 
-    /* Modal Command + K Search */
     .search-modal-backdrop {
       position: fixed;
       inset: 0;
@@ -422,10 +419,10 @@
 <body>
   <header class="top-nav">
     <a href="#" class="brand">
-      {% if config.logo_url %}
-        <img src="{{ config.logo_url }}" alt="Logo" />
-      {% endif %}
-      <span>{{ config.title }}</span>
+      {{ if .Config.LogoURL }}
+        <img src="{{ .Config.LogoURL }}" alt="Logo" />
+      {{ end }}
+      <span>{{ .Config.Title }}</span>
     </a>
 
     <button class="search-btn" id="search-trigger" onclick="toggleSearchModal(true)">
@@ -443,83 +440,82 @@
 
   <div class="app-layout">
     <aside class="sidebar">
-      {% for file in doc_data.files %}
-        {% if file.services %}
+      {{ range .DocData.Files }}
+        {{ if .Services }}
           <div class="sidebar-section">
             <div class="sidebar-title">Services</div>
-            {% for service in file.services %}
-              <a href="#service-{{ service.full_name }}" class="sidebar-link">
-                <span>{{ service.name }}</span>
+            {{ range $svc := .Services }}
+              <a href="#service-{{ $svc.FullName }}" class="sidebar-link">
+                <span>{{ $svc.Name }}</span>
               </a>
-              {% for method in service.methods %}
-                <a href="#method-{{ service.full_name }}-{{ method.name }}" class="sidebar-link" style="padding-left: 24px;">
-                  <span>{{ method.name }}</span>
+              {{ range $svc.Methods }}
+                <a href="#method-{{ $svc.FullName }}-{{ .Name }}" class="sidebar-link" style="padding-left: 24px;">
+                  <span>{{ .Name }}</span>
                   <span class="badge-method">RPC</span>
                 </a>
-              {% endfor %}
-            {% endfor %}
+              {{ end }}
+            {{ end }}
           </div>
-        {% endif %}
+        {{ end }}
 
-        {% if file.messages %}
+        {{ if .Messages }}
           <div class="sidebar-section">
             <div class="sidebar-title">Messages</div>
-            {% for msg in file.messages %}
-              {% if not msg.is_map_entry %}
-                <a href="#message-{{ msg.full_name }}" class="sidebar-link">
-                  <span>{{ msg.name }}</span>
+            {{ range .Messages }}
+              {{ if not .IsMapEntry }}
+                <a href="#message-{{ .FullName }}" class="sidebar-link">
+                  <span>{{ .Name }}</span>
                 </a>
-              {% endif %}
-            {% endfor %}
+              {{ end }}
+            {{ end }}
           </div>
-        {% endif %}
+        {{ end }}
 
-        {% if file.enums %}
+        {{ if .Enums }}
           <div class="sidebar-section">
             <div class="sidebar-title">Enums</div>
-            {% for enum_item in file.enums %}
-              <a href="#enum-{{ enum_item.full_name }}" class="sidebar-link">
-                <span>{{ enum_item.name }}</span>
+            {{ range .Enums }}
+              <a href="#enum-{{ .FullName }}" class="sidebar-link">
+                <span>{{ .Name }}</span>
               </a>
-            {% endfor %}
+            {{ end }}
           </div>
-        {% endif %}
+        {{ end }}
 
-        {% if file.extensions %}
+        {{ if .Extensions }}
           <div class="sidebar-section">
             <div class="sidebar-title">Extensions</div>
-            {% for ext in file.extensions %}
-              <a href="#extension-{{ ext.name }}" class="sidebar-link">
-                <span>{{ ext.name }}</span>
+            {{ range .Extensions }}
+              <a href="#extension-{{ .Name }}" class="sidebar-link">
+                <span>{{ .Name }}</span>
               </a>
-            {% endfor %}
+            {{ end }}
           </div>
-        {% endif %}
-      {% endfor %}
+        {{ end }}
+      {{ end }}
     </aside>
 
     <main class="main-content">
-      {% for file in doc_data.files %}
-        <!-- Services Section -->
-        {% for service in file.services %}
-          <section id="service-{{ service.full_name }}" class="doc-section">
+      {{ range $file := .DocData.Files }}
+        {{ range $service := $file.Services }}
+          <section id="service-{{ $service.FullName }}" class="doc-section">
             <div class="section-header">
               <div class="section-meta">
-                <span class="package-tag">{{ file.package }}</span>
+                <span class="package-tag">{{ $file.Package }}</span>
                 <span>Service</span>
               </div>
-              <h1 class="section-title">{{ service.name }}</h1>
-              {% if service.comments.description %}
-                <div class="description">{{ service.comments.description }}</div>
-              {% endif %}
+              <h1 class="section-title">{{ $service.Name }}</h1>
+              {{ if $service.Comments.Description }}
+                <div class="description">{{ $service.Comments.Description }}</div>
+              {{ end }}
             </div>
 
-            {% for method in service.methods %}
-              <div id="method-{{ service.full_name }}-{{ method.name }}" class="doc-section" style="margin-top: 40px;">
-                <h2>{{ method.name }}</h2>
-                {% if method.comments.description %}
-                  <p class="description">{{ method.comments.description }}</p>
-                {% endif %}
+            {{ range $method := $service.Methods }}
+              <div id="method-{{ $service.FullName }}-{{ $method.Name }}" class="doc-section" style="margin-top: 40px;">
+                <h2>{{ $method.Name }}</h2>
+                {{ if $method.Comments.Description }}
+                  <p class="description">{{ $method.Comments.Description }}</p>
+                {{ end }}
 
                 <div class="method-grid">
                   <div class="card">
@@ -534,11 +530,11 @@
                       <tbody>
                         <tr>
                           <td>Input Request</td>
-                          <td><a href="#message-{{ method.input_type }}" class="param-name">{{ method.input_type }}</a></td>
+                          <td><a href="#message-{{ $method.InputType }}" class="param-name">{{ $method.InputType }}</a></td>
                         </tr>
                         <tr>
                           <td>Output Response</td>
-                          <td><a href="#message-{{ method.output_type }}" class="param-name">{{ method.output_type }}</a></td>
+                          <td><a href="#message-{{ $method.OutputType }}" class="param-name">{{ $method.OutputType }}</a></td>
                         </tr>
                       </tbody>
                     </table>
@@ -546,31 +542,30 @@
 
                   <div class="card">
                     <h3>gRPC Definition</h3>
-                    <div class="code-box">rpc {{ method.name }} ({{ method.input_type.split('.')[-1] }}) returns ({{ method.output_type.split('.')[-1] }});</div>
+                    <div class="code-box">rpc {{ $method.Name }} ({{ $method.InputType }}) returns ({{ $method.OutputType }});</div>
                   </div>
                 </div>
               </div>
-            {% endfor %}
+            {{ end }}
           </section>
-        {% endfor %}
+        {{ end }}
 
-        <!-- Messages Section -->
-        {% if file.messages %}
+        {{ if $file.Messages }}
           <section class="doc-section">
             <h1 class="section-title">Messages</h1>
-            {% for msg in file.messages %}
-              {% if not msg.is_map_entry %}
-                <div id="message-{{ msg.full_name }}" class="card" style="margin-bottom: 24px;">
+            {{ range $msg := $file.Messages }}
+              {{ if not $msg.IsMapEntry }}
+                <div id="message-{{ $msg.FullName }}" class="card" style="margin-bottom: 24px;">
                   <div class="section-meta">
-                    <span class="package-tag">{{ file.package }}</span>
+                    <span class="package-tag">{{ $file.Package }}</span>
                     <span>Message</span>
                   </div>
-                  <h2 style="margin-top: 8px;">{{ msg.name }}</h2>
-                  {% if msg.comments.description %}
-                    <p class="description">{{ msg.comments.description }}</p>
-                  {% endif %}
+                  <h2 style="margin-top: 8px;">{{ $msg.Name }}</h2>
+                  {{ if $msg.Comments.Description }}
+                    <p class="description">{{ $msg.Comments.Description }}</p>
+                  {{ end }}
 
-                  {% if msg.fields %}
+                  {{ if $msg.Fields }}
                     <table class="params-table">
                       <thead>
                         <tr>
@@ -581,52 +576,51 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for field in msg.fields %}
+                        {{ range $field := $msg.Fields }}
                           <tr>
-                            <td class="param-name">{{ field.name }}</td>
+                            <td class="param-name">{{ $field.Name }}</td>
                             <td>
-                              {% if field.type_name %}
-                                {% if field.type == 'enum' %}
-                                  <a href="#enum-{{ field.type_name }}" class="param-type">{{ field.type_display }}</a>
-                                {% else %}
-                                  <a href="#message-{{ field.type_name }}" class="param-type">{{ field.type_display }}</a>
-                                {% endif %}
-                              {% else %}
-                                <span class="param-type">{{ field.type }}</span>
-                              {% endif %}
+                              {{ if $field.TypeName }}
+                                {{ if eq $field.Type "enum" }}
+                                  <a href="#enum-{{ $field.TypeName }}" class="param-type">{{ $field.TypeDisplay }}</a>
+                                {{ else }}
+                                  <a href="#message-{{ $field.TypeName }}" class="param-type">{{ $field.TypeDisplay }}</a>
+                                {{ end }}
+                              {{ else }}
+                                <span class="param-type">{{ $field.Type }}</span>
+                              {{ end }}
                             </td>
-                            <td><span class="param-desc">{{ field.label }}</span></td>
+                            <td><span class="param-desc">{{ $field.Label }}</span></td>
                             <td class="param-desc">
-                              {{ field.comments.description }}
-                              {% if field.oneof_name %}
-                                <div style="margin-top: 4px;"><span class="badge-method">oneof {{ field.oneof_name }}</span></div>
-                              {% endif %}
+                              {{ $field.Comments.Description }}
+                              {{ if $field.OneofName }}
+                                <div style="margin-top: 4px;"><span class="badge-method">oneof {{ $field.OneofName }}</span></div>
+                              {{ end }}
                             </td>
                           </tr>
-                        {% endfor %}
+                        {{ end }}
                       </tbody>
                     </table>
-                  {% endif %}
+                  {{ end }}
                 </div>
-              {% endif %}
-            {% endfor %}
+              {{ end }}
+            {{ end }}
           </section>
-        {% endif %}
+        {{ end }}
 
-        <!-- Enums Section -->
-        {% if file.enums %}
+        {{ if $file.Enums }}
           <section class="doc-section">
             <h1 class="section-title">Enums</h1>
-            {% for enum_item in file.enums %}
-              <div id="enum-{{ enum_item.full_name }}" class="card" style="margin-bottom: 24px;">
+            {{ range $enum := $file.Enums }}
+              <div id="enum-{{ $enum.FullName }}" class="card" style="margin-bottom: 24px;">
                 <div class="section-meta">
-                  <span class="package-tag">{{ file.package }}</span>
+                  <span class="package-tag">{{ $file.Package }}</span>
                   <span>Enum</span>
                 </div>
-                <h2 style="margin-top: 8px;">{{ enum_item.name }}</h2>
-                {% if enum_item.comments.description %}
-                  <p class="description">{{ enum_item.comments.description }}</p>
-                {% endif %}
+                <h2 style="margin-top: 8px;">{{ $enum.Name }}</h2>
+                {{ if $enum.Comments.Description }}
+                  <p class="description">{{ $enum.Comments.Description }}</p>
+                {{ end }}
 
                 <table class="params-table">
                   <thead>
@@ -637,44 +631,42 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for val in enum_item['values'] %}
+                    {{ range $val := $enum.Values }}
                       <tr>
-                        <td class="param-name">{{ val.name }}</td>
-                        <td><span class="param-type">{{ val.number }}</span></td>
-                        <td class="param-desc">{{ val.comments.description }}</td>
+                        <td class="param-name">{{ $val.Name }}</td>
+                        <td><span class="param-type">{{ $val.Number }}</span></td>
+                        <td class="param-desc">{{ $val.Comments.Description }}</td>
                       </tr>
-                    {% endfor %}
+                    {{ end }}
                   </tbody>
                 </table>
               </div>
-            {% endfor %}
+            {{ end }}
           </section>
-        {% endif %}
+        {{ end }}
 
-        <!-- Extensions Section -->
-        {% if file.extensions %}
+        {{ if $file.Extensions }}
           <section class="doc-section">
             <h1 class="section-title">Extensions</h1>
-            {% for ext in file.extensions %}
-              <div id="extension-{{ ext.name }}" class="card" style="margin-bottom: 24px;">
+            {{ range $ext := $file.Extensions }}
+              <div id="extension-{{ $ext.Name }}" class="card" style="margin-bottom: 24px;">
                 <div class="section-meta">
-                  <span class="package-tag">{{ file.package }}</span>
+                  <span class="package-tag">{{ $file.Package }}</span>
                   <span>Extension</span>
                 </div>
-                <h2 style="margin-top: 8px;">{{ ext.name }}</h2>
-                <p class="param-desc">Extends <code>{{ ext.extendee }}</code> with type <code>{{ ext.type }}</code> (Tag: {{ ext.number }})</p>
-                {% if ext.comments.description %}
-                  <p class="description">{{ ext.comments.description }}</p>
-                {% endif %}
+                <h2 style="margin-top: 8px;">{{ $ext.Name }}</h2>
+                <p class="param-desc">Extends <code>{{ $ext.Extendee }}</code> with type <code>{{ $ext.Type }}</code> (Tag: {{ $ext.Number }})</p>
+                {{ if $ext.Comments.Description }}
+                  <p class="description">{{ $ext.Comments.Description }}</p>
+                {{ end }}
               </div>
-            {% endfor %}
+            {{ end }}
           </section>
-        {% endif %}
-      {% endfor %}
+        {{ end }}
+      {{ end }}
     </main>
   </div>
 
-  <!-- Command + K Search Modal -->
   <div class="search-modal-backdrop" id="search-modal" onclick="if(event.target===this) toggleSearchModal(false)">
     <div class="search-modal">
       <div class="search-input-wrapper">
@@ -688,10 +680,8 @@
   </div>
 
   <script>
-    // Embedded doc dataset for client-side search
-    const docData = {{ doc_data_json | safe }};
+    const docData = {{ .DocDataJSON }};
 
-    // Index search items
     const searchIndex = [];
     if (docData && docData.files) {
       docData.files.forEach(f => {
@@ -745,18 +735,17 @@
         return;
       }
 
-      container.innerHTML = results.slice(0, 10).map(item => `
-        <a href="${item.link}" class="search-result-item" onclick="toggleSearchModal(false)">
-          <div class="search-result-title">
-            <span>${item.name}</span>
-            <span class="badge-method">${item.type}</span>
-          </div>
-          ${item.desc ? `<div class="search-result-desc">${item.desc.slice(0, 100)}...</div>` : ''}
-        </a>
-      `).join('');
+      container.innerHTML = results.slice(0, 10).map(item =>
+        '<a href="' + item.link + '" class="search-result-item" onclick="toggleSearchModal(false)">' +
+          '<div class="search-result-title">' +
+            '<span>' + item.name + '</span>' +
+            '<span class="badge-method">' + item.type + '</span>' +
+          '</div>' +
+          (item.desc ? '<div class="search-result-desc">' + item.desc.slice(0, 100) + '...</div>' : '') +
+        '</a>'
+      ).join('');
     }
 
-    // Keyboard shortcut Cmd + K or Ctrl + K
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -768,7 +757,6 @@
       }
     });
 
-    // Theme toggling
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
@@ -777,4 +765,4 @@
     }
   </script>
 </body>
-</html>
+</html>`
