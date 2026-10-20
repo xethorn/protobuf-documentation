@@ -1,0 +1,23 @@
+// Represents custom options and extensions for payment testing in payments ecosystem.
+// Provides custom descriptors to mark experimental methods or sensitive payload fields.
+syntax = "proto3";
+
+package payments.options;
+
+import "google/protobuf/descriptor.proto";
+
+// Represents a custom extension option for RPC methods to configure experimental behavior.
+// Allows client SDK generators and documentation tools to display experimental tags.
+extend google.protobuf.MethodOptions {
+  // Represents a boolean flag indicating whether the targeted RPC method is experimental.
+  // Experimental RPCs are subject to breaking interface changes without major version bumps.
+  bool is_experimental = 50001;
+}
+
+// Represents a custom extension option for fields to mark data sensitivity levels.
+// Helps automated logging pipelines redact sensitive information before persisting logs.
+extend google.protobuf.FieldOptions {
+  // Represents a boolean indicator specifying if the field contains PII or cardholder data.
+  // Sensitive fields require field-level encryption and tokenization in data streams.
+  bool is_sensitive = 50002;
+}

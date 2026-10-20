@@ -1,0 +1,35 @@
+// Represents Payment Refunds Service API definition for managing refund lifecycles.
+// Provides RPC methods for retrieving, querying, creating, updating, and deleting refunds.
+syntax = "proto3";
+
+package payments.core;
+
+import "tests/fixtures/methods/retrieve_refund.proto";
+import "tests/fixtures/methods/query_refunds.proto";
+import "tests/fixtures/methods/create_refund.proto";
+import "tests/fixtures/methods/update_refund.proto";
+import "tests/fixtures/methods/delete_refund.proto";
+
+// Represents service managing payment refund operations in payment gateway ecosystem.
+// Handles RPC requests for refund settlement, state tracking, and auditing.
+service RefundsService {
+  // Represents RPC method to retrieve a payment refund resource by its unique identifier.
+  // Returns single PaymentRefund resource wrapper or NOT_FOUND error item.
+  rpc RetrieveRefund(RetrieveRefundRequest) returns (RetrieveRefundResponse);
+
+  // Represents RPC method to query and filter payment refunds based on predicate sets.
+  // Supports paginated search result traversal using opaque cursor tokens.
+  rpc QueryRefunds(QueryRefundsRequest) returns (QueryRefundsResponse);
+
+  // Represents RPC method to create a new payment refund with idempotency protection.
+  // Guarantees at-most-once execution behavior when retrying network requests.
+  rpc CreateRefund(CreateRefundRequest) returns (CreateRefundResponse);
+
+  // Represents RPC method to update existing attributes on a payment refund resource.
+  // Persists modified reason strings and custom metadata tag key-value pairs.
+  rpc UpdateRefund(UpdateRefundRequest) returns (UpdateRefundResponse);
+
+  // Represents RPC method to delete or void a payment refund in PENDING status.
+  // Cancels processing before card network clearing and settlement occurs.
+  rpc DeleteRefund(DeleteRefundRequest) returns (DeleteRefundResponse);
+}
